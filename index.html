@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>供应商未付款及建议付款顺序</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f6fa;color:#1f2937;font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;}
+.wrap{max-width:1680px;margin:0 auto;padding:28px;}
+.header{background:linear-gradient(135deg,#123a63,#1d5b8f);color:#fff;border-radius:16px;padding:28px 30px;box-shadow:0 8px 24px rgba(31,41,55,.12)}
+.header h1{margin:0 0 10px;font-size:28px}
+.header p{margin:0;opacity:.9;font-size:14px;line-height:1.8}
+.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:18px 0}
+.card{background:#fff;border-radius:12px;padding:16px 18px;box-shadow:0 2px 10px rgba(31,41,55,.06);border:1px solid #e5e7eb}
+.card .label{font-size:12px;color:#6b7280;margin-bottom:7px}
+.card .value{font-size:22px;font-weight:700;color:#173c62}
+.section{background:#fff;border-radius:12px;padding:20px 22px;margin-top:16px;border:1px solid #e5e7eb;box-shadow:0 2px 10px rgba(31,41,55,.05)}
+.section h2{margin:0 0 12px;font-size:18px;color:#173c62}
+.rule{line-height:1.9;font-size:14px;color:#374151}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.p1{background:#fee2e2;color:#991b1b}
+.p2{background:#fef3c7;color:#92400e}
+.p3{background:#dcfce7;color:#166534}
+.p4{background:#e5e7eb;color:#374151}
+.table-wrap{overflow:auto;max-height:none;border-radius:10px;border:1px solid #dbe3ec}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:1500px;background:#fff;font-size:12px}
+thead th{position:sticky;top:0;z-index:2;background:#174d7c;color:#fff;padding:11px 10px;text-align:left;border-right:1px solid rgba(255,255,255,.14);white-space:nowrap}
+tbody td{padding:9px 10px;border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;vertical-align:top;line-height:1.55}
+tbody tr:hover{background:#f8fbff}
+tbody tr.tier-p1 td:first-child{border-left:4px solid #dc2626}
+tbody tr.tier-p2 td:first-child{border-left:4px solid #d97706}
+tbody tr.tier-p3 td:first-child{border-left:4px solid #16a34a}
+tbody tr.tier-p4 td:first-child{border-left:4px solid #6b7280}
+.rank{font-weight:700;text-align:center;color:#173c62}
+.supplier{font-weight:700;white-space:nowrap}
+.amount{text-align:right;font-weight:700;white-space:nowrap}
+.score{text-align:center;font-weight:700}
+.timing{font-weight:700;white-space:nowrap}
+.remark{min-width:420px;color:#4b5563}
+.note{font-size:12px;color:#6b7280;line-height:1.7;margin-top:10px}
+.footer{font-size:12px;color:#6b7280;margin:16px 4px 0;line-height:1.8}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}.wrap{padding:14px}}
+@media print{body{background:#fff}.wrap{max-width:none;padding:0}.header,.section,.card{box-shadow:none}thead th{position:static}}
+
+.priority-select{border:1px solid #cbd5e1;border-radius:7px;padding:5px 8px;font-weight:700;font-size:12px;cursor:pointer;outline:none}.priority-select.p1{background:#fee2e2;color:#991b1b}.priority-select.p2{background:#fef3c7;color:#92400e}.priority-select.p3{background:#dcfce7;color:#166534}.priority-select.p4{background:#e5e7eb;color:#374151}.manual-note{font-size:12px;color:#1d4ed8;margin-top:8px;font-weight:600}
+.dept-select{border:1px solid #cbd5e1;border-radius:7px;padding:5px 8px;font-weight:600;font-size:12px;cursor:pointer;outline:none;background:#f8fafc;color:#334155;min-width:138px}.dept-select:focus{border-color:#2563eb;background:#fff}
+
+.term-select,.dept-select{border:1px solid #cbd5e1;border-radius:7px;padding:5px 8px;font-weight:600;font-size:12px;background:#fff;color:#374151;cursor:pointer;outline:none;min-width:110px}
+.toolbar{display:flex;gap:10px;align-items:center;margin:0 0 12px;flex-wrap:wrap}.add-btn{border:0;border-radius:8px;padding:9px 14px;background:#174d7c;color:#fff;font-weight:700;cursor:pointer}.add-btn:hover{background:#123a63}.save-tip{font-size:12px;color:#6b7280}.modal-mask{display:none;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:50;align-items:center;justify-content:center;padding:20px}.modal-mask.show{display:flex}.modal{width:min(560px,96vw);background:#fff;border-radius:14px;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,.22)}.modal h3{margin:0 0 16px;color:#173c62}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:#475569;font-weight:700}.field input,.field select{border:1px solid #cbd5e1;border-radius:8px;padding:9px 10px;font-size:13px}.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}.btn-secondary,.btn-primary{border:0;border-radius:8px;padding:9px 14px;font-weight:700;cursor:pointer}.btn-secondary{background:#e5e7eb;color:#374151}.btn-primary{background:#174d7c;color:#fff}.delete-btn{border:0;background:transparent;color:#b91c1c;cursor:pointer;font-size:12px;padding:0}.actions-cell{white-space:nowrap;text-align:center}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+</head>
+<body>
+<div class="wrap">
+<div class="header">
+<h1>供应商未付款及建议付款顺序</h1>
+<p>排序依据：账期因素占70%，供应商综合指数占30%。在保留P1/P2/P3/P4分层的基础上，新增“全局建议付款顺序”，直接明确120家供应商的先后顺位。</p>
+</div>
+<div class="cards">
+<div class="card"><div class="label">供应商数量</div><div class="value">120家</div></div>
+</div>
+<div class="section">
+<h2>付款排序规则</h2>
+<div class="rule">
+      账期因素按当前实际结算方式计分：<b>月结70分、半月结65分、周结60分、日结55分、白条20分、预付款/专项采购0分</b>；
+      再加上<b>供应商综合指数 × 30%</b>形成付款得分，并按付款得分从高到低排序。综合指数本身综合考虑报价能力与实际采购合作深度。
+    </div>
+<div class="legend">
+<span class="badge p1">P1 优先付款</span>
+<span class="badge p2">P2 第二批付款</span>
+<span class="badge p3">P3 常规付款</span>
+<span class="badge p4">P4 后置/按项目支付</span>
+</div><div class="manual-note">操作：可直接调整“付款优先级”“管理部门”和“账期”。付款优先级调整后自动归入对应梯队；账期调整后自动重算付款得分，并在梯队内按付款得分从高到低重新排序。点击“新增供应商”可直接加入新供应商。</div>
+<div class="note">说明：P4中的预付款、集采定制、自采补单类，不建议机械理解为“永远最后付款”，应结合具体项目是否需要即时付款才能履约来处理。</div>
+</div>
+<div class="section">
+<h2>供应商建议付款顺序明细</h2>
+<div class="toolbar"><button class="add-btn" id="addSupplierBtn" type="button">+ 新增供应商</button><span class="save-tip">手动调整及新增数据自动保存在当前浏览器。</span></div><div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>全局建议付款顺序</th>
+<th>付款优先级（可手动调整）</th>
+<th>供应商</th>
+<th>管理部门（可手动调整）</th>
+<th>账期（可手动调整）</th>
+<th>付款得分</th>
+<th>建议付款安排</th>
+<th>付款理由</th>
+<th>排名原因 / 备注</th>
+<th>操作</th></tr>
+</thead>
+<tbody>
+<tr class="tier-p1" data-amount="2161.00" data-composite="73.6">
+<td class="rank">1</td>
+<td><select aria-label="大数有据付款优先级" class="priority-select p1"><option selected="selected" value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">大数有据</td>
+<td class="department-cell"><select aria-label="大数有据管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option selected="selected" value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="大数有据账期" class="term-select"><option selected="selected" value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">92.1</td>
+<td class="timing">优先支付</td>
+<td>付款得分 92.1（账期70分 + 综合73.6×30%）</td>
+<td class="remark">月结；综合指数73.6，全量第8名，评级“重点扶持”，最低价占比98.3%；综合指数靠前且具账期，列入优先付款序列</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p1" data-amount="1573.80" data-composite="72.3">
+<td class="rank">2</td>
+<td><select aria-label="易诺付款优先级" class="priority-select p1"><option selected="selected" value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">易诺</td>
+<td class="department-cell"><select aria-label="易诺管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option selected="selected" value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="易诺账期" class="term-select"><option selected="selected" value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">91.7</td>
+<td class="timing">优先支付</td>
+<td>付款得分 91.7（账期70分 + 综合72.3×30%）</td>
+<td class="remark">月结；综合指数72.3，全量第9名，评级“重点扶持”，最低价占比41.8%；综合指数靠前且具账期，列入优先付款序列</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p1" data-amount="1118.00" data-composite="70.5">
+<td class="rank">3</td>
+<td><select aria-label="富瑞达付款优先级" class="priority-select p1"><option selected="selected" value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">富瑞达</td>
+<td class="department-cell"><select aria-label="富瑞达管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option selected="selected" value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="富瑞达账期" class="term-select"><option selected="selected" value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">91.2</td>
+<td class="timing">优先支付</td>
+<td>付款得分 91.2（账期70分 + 综合70.5×30%）</td>
+<td class="remark">月结；综合指数70.5，全量第14名，评级“保留并重点比价”，最低价占比100.0%；综合指数靠前且具账期，列入优先付款序列</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p1" data-amount="17656.00" data-composite="69.1">
+<td class="rank">4</td>
+<td><select aria-label="中卡付款优先级" class="priority-select p1"><option selected="selected" value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">中卡</td>
+<td class="department-cell"><select aria-label="中卡管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="中卡账期" class="term-select"><option selected="selected" value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">90.7</td>
+<td class="timing">优先支付</td>
+<td>付款得分 90.7（账期70分 + 综合69.1×30%）</td>
+<td class="remark">月结；综合指数69.1，全量第18名，评级“保留并重点比价”，最低价占比100.0%；账期条件好、综合评分中上，优先级较高</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p1" data-amount="5562.10" data-composite="78.3">
+<td class="rank">5</td>
+<td><select aria-label="来瑞丰付款优先级" class="priority-select p1"><option selected="selected" value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">来瑞丰</td>
+<td class="department-cell"><select aria-label="来瑞丰管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option selected="selected" value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="来瑞丰账期" class="term-select"><option value="月结">月结</option><option selected="selected" value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">88.5</td>
+<td class="timing">优先支付</td>
+<td>付款得分 88.5（账期65分 + 综合78.3×30%）</td>
+<td class="remark">半月结；综合指数78.3，全量第2名，评级“重点扶持”，最低价占比22.3%；综合指数靠前且具账期，列入优先付款序列</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p1" data-amount="511.60" data-composite="49.7">
+<td class="rank">6</td>
+<td><select aria-label="枣恋付款优先级" class="priority-select p1"><option selected="selected" value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">枣恋</td>
+<td class="department-cell"><select aria-label="枣恋管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="枣恋账期" class="term-select"><option selected="selected" value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">84.9</td>
+<td class="timing">优先支付</td>
+<td>付款得分 84.9（账期70分 + 综合49.7×30%）</td>
+<td class="remark">月结；综合指数49.7，全量第55名，评级“观察优化”，最低价占比27.8%；账期条件较好，但综合指数偏低，排序被下调</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p1" data-amount="5010.90" data-composite="43.5">
+<td class="rank">7</td>
+<td><select aria-label="金礼颂付款优先级" class="priority-select p1"><option selected="selected" value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">金礼颂</td>
+<td class="department-cell"><select aria-label="金礼颂管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="金礼颂账期" class="term-select"><option selected="selected" value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">83.0</td>
+<td class="timing">优先支付</td>
+<td>付款得分 83.0（账期70分 + 综合43.5×30%）</td>
+<td class="remark">月结；综合指数43.5，全量第83名，评级“淘汰/暂停新增”，最低价占比45.8%；账期条件较好，但综合指数偏低，排序被下调</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p1" data-amount="1123.00" data-composite="38.6">
+<td class="rank">8</td>
+<td><select aria-label="策嘉付款优先级" class="priority-select p1"><option selected="selected" value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">策嘉</td>
+<td class="department-cell"><select aria-label="策嘉管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="策嘉账期" class="term-select"><option selected="selected" value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">81.6</td>
+<td class="timing">优先支付</td>
+<td>付款得分 81.6（账期70分 + 综合38.6×30%）</td>
+<td class="remark">月结；综合指数38.6，全量第105名，评级“淘汰/暂停新增”；账期条件较好，但综合指数偏低，排序被下调</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p1" data-amount="9.50" data-composite="55.2">
+<td class="rank">9</td>
+<td><select aria-label="恒丰泰华付款优先级" class="priority-select p1"><option selected="selected" value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">恒丰泰华</td>
+<td class="department-cell"><select aria-label="恒丰泰华管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="恒丰泰华账期" class="term-select"><option value="月结">月结</option><option selected="selected" value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">81.6</td>
+<td class="timing">优先支付</td>
+<td>付款得分 81.6（账期65分 + 综合55.2×30%）</td>
+<td class="remark">半月结；综合指数55.2，全量第42名，评级“观察优化”，最低价占比15.5%；账期条件好、综合评分中上，优先级较高</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p1" data-amount="2474.82" data-composite="87.4">
+<td class="rank">10</td>
+<td><select aria-label="晟丹付款优先级" class="priority-select p1"><option selected="selected" value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">晟丹</td>
+<td class="department-cell"><select aria-label="晟丹管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option selected="selected" value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="晟丹账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">81.2</td>
+<td class="timing">优先支付</td>
+<td>付款得分 81.2（账期55分 + 综合87.4×30%）</td>
+<td class="remark">现行日结；综合指数87.4，全量第1名，评级“重点扶持”，最低价占比40.7%；综合指数靠前且具账期，列入优先付款序列</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="2616.00" data-composite="77.9">
+<td class="rank">11</td>
+<td><select aria-label="甜卿品牌付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">甜卿品牌</td>
+<td class="department-cell"><select aria-label="甜卿品牌管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="甜卿品牌账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">78.4</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 78.4（账期55分 + 综合77.9×30%）</td>
+<td class="remark">日结；综合指数77.9，全量第3名，评级“重点扶持”，最低价占比36.6%；综合指数靠前且具账期，列入优先付款序列</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="1305.50" data-composite="76.2">
+<td class="rank">12</td>
+<td><select aria-label="礼博付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">礼博</td>
+<td class="department-cell"><select aria-label="礼博管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="礼博账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">77.9</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 77.9（账期55分 + 综合76.2×30%）</td>
+<td class="remark">日结；综合指数76.2，全量第5名，评级“重点扶持”，最低价占比92.1%；综合指数靠前且具账期，列入优先付款序列</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="1550.00" data-composite="73.9">
+<td class="rank">13</td>
+<td><select aria-label="智创云联付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">智创云联</td>
+<td class="department-cell"><select aria-label="智创云联管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="智创云联账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">77.2</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 77.2（账期55分 + 综合73.9×30%）</td>
+<td class="remark">日结；综合指数73.9，全量第7名，评级“重点扶持”，最低价占比88.4%；综合指数靠前且具账期，列入优先付款序列</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="2792.60" data-composite="72.3">
+<td class="rank">14</td>
+<td><select aria-label="沐帆付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">沐帆</td>
+<td class="department-cell"><select aria-label="沐帆管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="沐帆账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">76.7</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 76.7（账期55分 + 综合72.3×30%）</td>
+<td class="remark">日结；综合指数72.3，全量第10名，评级“重点扶持”，最低价占比100.0%；综合指数靠前且具账期，列入优先付款序列</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="1073.00" data-composite="22.3">
+<td class="rank">15</td>
+<td><select aria-label="塞翁福付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">塞翁福</td>
+<td class="department-cell"><select aria-label="塞翁福管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="塞翁福账期" class="term-select"><option selected="selected" value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">76.7</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 76.7（账期70分 + 综合22.3×30%）</td>
+<td class="remark">月结；综合指数22.3，全量第148名，评级“淘汰/暂停新增”；账期条件较好，但综合指数偏低，排序被下调</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="3734.04" data-composite="71.8">
+<td class="rank">16</td>
+<td><select aria-label="多喜多付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">多喜多</td>
+<td class="department-cell"><select aria-label="多喜多管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="多喜多账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">76.5</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 76.5（账期55分 + 综合71.8×30%）</td>
+<td class="remark">日结；综合指数71.8，全量第11名，评级“保留并重点比价”，最低价占比94.9%；综合指数靠前且具账期，列入优先付款序列</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="565.90" data-composite="70.7">
+<td class="rank">17</td>
+<td><select aria-label="爱推荐付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">爱推荐</td>
+<td class="department-cell"><select aria-label="爱推荐管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="爱推荐账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">76.2</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 76.2（账期55分 + 综合70.7×30%）</td>
+<td class="remark">日结；综合指数70.7，全量第13名，评级“保留并重点比价”，最低价占比84.4%；综合指数靠前且具账期，列入优先付款序列</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="407.00" data-composite="69.1">
+<td class="rank">18</td>
+<td><select aria-label="融骏付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">融骏</td>
+<td class="department-cell"><select aria-label="融骏管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="融骏账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">75.7</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 75.7（账期55分 + 综合69.1×30%）</td>
+<td class="remark">日结；综合指数69.1，全量第16名，评级“保留并重点比价”，最低价占比57.7%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="114.00" data-composite="68.4">
+<td class="rank">19</td>
+<td><select aria-label="达尔美付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">达尔美</td>
+<td class="department-cell"><select aria-label="达尔美管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="达尔美账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">75.5</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 75.5（账期55分 + 综合68.4×30%）</td>
+<td class="remark">日结；综合指数68.4，全量第19名，评级“保留并重点比价”，最低价占比81.1%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="3043.00" data-composite="66.8">
+<td class="rank">20</td>
+<td><select aria-label="花晨月夕付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">花晨月夕</td>
+<td class="department-cell"><select aria-label="花晨月夕管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="花晨月夕账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">75.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 75.0（账期55分 + 综合66.8×30%）</td>
+<td class="remark">日结；综合指数66.8，全量第23名，评级“保留并重点比价”，最低价占比62.7%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="1852.00" data-composite="65.7">
+<td class="rank">21</td>
+<td><select aria-label="礼想家付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">礼想家</td>
+<td class="department-cell"><select aria-label="礼想家管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="礼想家账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">74.7</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 74.7（账期55分 + 综合65.7×30%）</td>
+<td class="remark">日结；综合指数65.7，全量第24名，评级“保留并重点比价”，最低价占比11.2%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="1218.80" data-composite="48.8">
+<td class="rank">22</td>
+<td><select aria-label="玖洲徕付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">玖洲徕</td>
+<td class="department-cell"><select aria-label="玖洲徕管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option selected="selected" value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="玖洲徕账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option selected="selected" value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">74.6</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 74.6（账期60分 + 综合48.8×30%）</td>
+<td class="remark">周结；综合指数48.8，全量第60名，评级“观察优化”，最低价占比39.7%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="610.80" data-composite="64.3">
+<td class="rank">23</td>
+<td><select aria-label="众凯付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">众凯</td>
+<td class="department-cell"><select aria-label="众凯管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="众凯账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">74.3</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 74.3（账期55分 + 综合64.3×30%）</td>
+<td class="remark">日结；综合指数64.3，全量第25名，评级“保留并重点比价”，最低价占比76.4%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="455.00" data-composite="64.1">
+<td class="rank">24</td>
+<td><select aria-label="耀莱付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">耀莱</td>
+<td class="department-cell"><select aria-label="耀莱管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option selected="selected" value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="耀莱账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">74.2</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 74.2（账期55分 + 综合64.1×30%）</td>
+<td class="remark">日结；综合指数64.1，全量第26名，评级“保留并重点比价”，最低价占比21.9%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="42.00" data-composite="61.3">
+<td class="rank">25</td>
+<td><select aria-label="铭仕朗付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">铭仕朗</td>
+<td class="department-cell"><select aria-label="铭仕朗管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="铭仕朗账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">73.4</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 73.4（账期55分 + 综合61.3×30%）</td>
+<td class="remark">日结；综合指数61.3，全量第28名，评级“保留并重点比价”，最低价占比76.9%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="2543.60" data-composite="61.2">
+<td class="rank">26</td>
+<td><select aria-label="智臻云采付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">智臻云采</td>
+<td class="department-cell"><select aria-label="智臻云采管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option selected="selected" value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="智臻云采账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">73.4</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 73.4（账期55分 + 综合61.2×30%）</td>
+<td class="remark">日结；综合指数61.2，全量第29名，评级“保留并重点比价”，最低价占比19.5%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="379.00" data-composite="58.3">
+<td class="rank">27</td>
+<td><select aria-label="域驿付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">域驿</td>
+<td class="department-cell"><select aria-label="域驿管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="域驿账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">72.5</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 72.5（账期55分 + 综合58.3×30%）</td>
+<td class="remark">日结；综合指数58.3，全量第34名，评级“保留并重点比价”，最低价占比89.9%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="30.00" data-composite="58.3">
+<td class="rank">28</td>
+<td><select aria-label="博冉诚品付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">博冉诚品</td>
+<td class="department-cell"><select aria-label="博冉诚品管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option selected="selected" value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="博冉诚品账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">72.5</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 72.5（账期55分 + 综合58.3×30%）</td>
+<td class="remark">日结；综合指数58.3，全量第33名，评级“保留并重点比价”，最低价占比42.8%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="773.90" data-composite="57.4">
+<td class="rank">29</td>
+<td><select aria-label="汉之邦付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">汉之邦</td>
+<td class="department-cell"><select aria-label="汉之邦管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option selected="selected" value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="汉之邦账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">72.2</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 72.2（账期55分 + 综合57.4×30%）</td>
+<td class="remark">日结；综合指数57.4，全量第36名，评级“观察优化”，最低价占比30.6%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="103.00" data-composite="57.4">
+<td class="rank">30</td>
+<td><select aria-label="艺冉付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">艺冉</td>
+<td class="department-cell"><select aria-label="艺冉管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option selected="selected" value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="艺冉账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">72.2</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 72.2（账期55分 + 综合57.4×30%）</td>
+<td class="remark">日结；综合指数57.4，全量第37名，评级“观察优化”，最低价占比51.4%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="1197.00" data-composite="23.9">
+<td class="rank">31</td>
+<td><select aria-label="卡曼付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">卡曼</td>
+<td class="department-cell"><select aria-label="卡曼管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="卡曼账期" class="term-select"><option value="月结">月结</option><option selected="selected" value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">72.2</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 72.2（账期65分 + 综合23.9×30%）</td>
+<td class="remark">半月结；综合指数23.9，全量第143名，评级“淘汰/暂停新增”；账期条件较好，但综合指数偏低，排序被下调</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="188.00" data-composite="56.8">
+<td class="rank">32</td>
+<td><select aria-label="礼若河付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">礼若河</td>
+<td class="department-cell"><select aria-label="礼若河管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="礼若河账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">72.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 72.0（账期55分 + 综合56.8×30%）</td>
+<td class="remark">现行日结；综合指数56.8，全量第38名，评级“观察优化”，最低价占比23.5%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="1761.60" data-composite="56.7">
+<td class="rank">33</td>
+<td><select aria-label="云润达付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">云润达</td>
+<td class="department-cell"><select aria-label="云润达管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="云润达账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">72.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 72.0（账期55分 + 综合56.7×30%）</td>
+<td class="remark">日结；综合指数56.7，全量第39名，评级“观察优化”，最低价占比56.3%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="103.60" data-composite="39.1">
+<td class="rank">34</td>
+<td><select aria-label="礼邦付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">礼邦</td>
+<td class="department-cell"><select aria-label="礼邦管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="礼邦账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option selected="selected" value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">71.7</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 71.7（账期60分 + 综合39.1×30%）</td>
+<td class="remark">周结；综合指数39.1，全量第102名，评级“淘汰/暂停新增”，最低价占比25.0%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="65.00" data-composite="55.5">
+<td class="rank">35</td>
+<td><select aria-label="铭品付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">铭品</td>
+<td class="department-cell"><select aria-label="铭品管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="铭品账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">71.7</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 71.7（账期55分 + 综合55.5×30%）</td>
+<td class="remark">日结；综合指数55.5，全量第41名，评级“观察优化”；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="808.95" data-composite="54.2">
+<td class="rank">36</td>
+<td><select aria-label="交熠付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">交熠</td>
+<td class="department-cell"><select aria-label="交熠管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="交熠账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">71.3</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 71.3（账期55分 + 综合54.2×30%）</td>
+<td class="remark">日结；综合指数54.2，全量第44名，评级“观察优化”，最低价占比46.0%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="670.00" data-composite="53.3">
+<td class="rank">37</td>
+<td><select aria-label="金颖付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">金颖</td>
+<td class="department-cell"><select aria-label="金颖管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="金颖账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">71.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 71.0（账期55分 + 综合53.3×30%）</td>
+<td class="remark">日结；综合指数53.3，全量第47名，评级“观察优化”，最低价占比63.8%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="68.00" data-composite="53.2">
+<td class="rank">38</td>
+<td><select aria-label="璟昱有礼付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">璟昱有礼</td>
+<td class="department-cell"><select aria-label="璟昱有礼管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option selected="selected" value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="璟昱有礼账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">71.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 71.0（账期55分 + 综合53.2×30%）</td>
+<td class="remark">日结；综合指数53.2，全量第49名，评级“观察优化”，最低价占比61.5%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="1615.70" data-composite="52.6">
+<td class="rank">39</td>
+<td><select aria-label="一见喜付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">一见喜</td>
+<td class="department-cell"><select aria-label="一见喜管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="一见喜账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">70.8</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 70.8（账期55分 + 综合52.6×30%）</td>
+<td class="remark">日结；综合指数52.6，全量第50名，评级“观察优化”，最低价占比76.0%；账期与综合实力均为中等，正常安排</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="76.00" data-composite="33.5">
+<td class="rank">40</td>
+<td><select aria-label="中科农业付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">中科农业</td>
+<td class="department-cell"><select aria-label="中科农业管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="中科农业账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option selected="selected" value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">70.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 70.0（账期60分 + 综合33.5×30%）</td>
+<td class="remark">周结；综合指数33.5，全量第118名，评级“淘汰/暂停新增”，最低价占比40.7%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="4862.00" data-composite="0.0">
+<td class="rank">41</td>
+<td><select aria-label="途宝付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">途宝</td>
+<td class="department-cell"><select aria-label="途宝管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="途宝账期" class="term-select"><option selected="selected" value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">70.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 70.0（账期70分 + 综合0.0×30%）</td>
+<td class="remark">月结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；账期条件较好，但综合指数偏低，排序被下调</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="1441.40" data-composite="0.0">
+<td class="rank">42</td>
+<td><select aria-label="锦礼轩付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">锦礼轩</td>
+<td class="department-cell"><select aria-label="锦礼轩管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="锦礼轩账期" class="term-select"><option selected="selected" value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">70.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 70.0（账期70分 + 综合0.0×30%）</td>
+<td class="remark">月结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；账期条件较好，但综合指数偏低，排序被下调</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="515.70" data-composite="0.0">
+<td class="rank">43</td>
+<td><select aria-label="苏谷付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">苏谷</td>
+<td class="department-cell"><select aria-label="苏谷管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="苏谷账期" class="term-select"><option selected="selected" value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">70.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 70.0（账期70分 + 综合0.0×30%）</td>
+<td class="remark">月结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；账期条件较好，但综合指数偏低，排序被下调</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="1876.60" data-composite="49.5">
+<td class="rank">44</td>
+<td><select aria-label="邻家饭香付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">邻家饭香</td>
+<td class="department-cell"><select aria-label="邻家饭香管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="邻家饭香账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">69.8</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 69.8（账期55分 + 综合49.5×30%）</td>
+<td class="remark">日结；综合指数49.5，全量第56名，评级“观察优化”，最低价占比100.0%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="164.00" data-composite="49.0">
+<td class="rank">45</td>
+<td><select aria-label="卓培付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">卓培</td>
+<td class="department-cell"><select aria-label="卓培管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option selected="selected" value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="卓培账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">69.7</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 69.7（账期55分 + 综合49.0×30%）</td>
+<td class="remark">日结；综合指数49.0，全量第58名，评级“观察优化”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="599.45" data-composite="48.2">
+<td class="rank">46</td>
+<td><select aria-label="龙贸付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">龙贸</td>
+<td class="department-cell"><select aria-label="龙贸管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option selected="selected" value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="龙贸账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">69.5</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 69.5（账期55分 + 综合48.2×30%）</td>
+<td class="remark">日结；综合指数48.2，全量第62名，评级“观察优化”，最低价占比33.4%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="332.30" data-composite="47.4">
+<td class="rank">47</td>
+<td><select aria-label="汇涵付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">汇涵</td>
+<td class="department-cell"><select aria-label="汇涵管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="汇涵账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">69.2</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 69.2（账期55分 + 综合47.4×30%）</td>
+<td class="remark">日结；综合指数47.4，全量第65名，评级“观察优化”，最低价占比66.7%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="938.00" data-composite="47.3">
+<td class="rank">48</td>
+<td><select aria-label="南粤大地付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">南粤大地</td>
+<td class="department-cell"><select aria-label="南粤大地管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="南粤大地账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">69.2</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 69.2（账期55分 + 综合47.3×30%）</td>
+<td class="remark">日结；综合指数47.3，全量第67名，评级“观察优化”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="736.90" data-composite="47.1">
+<td class="rank">49</td>
+<td><select aria-label="好选礼付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">好选礼</td>
+<td class="department-cell"><select aria-label="好选礼管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="好选礼账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">69.1</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 69.1（账期55分 + 综合47.1×30%）</td>
+<td class="remark">日结；综合指数47.1，全量第68名，评级“观察优化”，最低价占比37.5%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="191.00" data-composite="46.6">
+<td class="rank">50</td>
+<td><select aria-label="玖丰玺付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">玖丰玺</td>
+<td class="department-cell"><select aria-label="玖丰玺管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="玖丰玺账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">69.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 69.0（账期55分 + 综合46.6×30%）</td>
+<td class="remark">日结；综合指数46.6，全量第71名，评级“观察优化”，最低价占比99.3%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="228.00" data-composite="44.9">
+<td class="rank">51</td>
+<td><select aria-label="曼予付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">曼予</td>
+<td class="department-cell"><select aria-label="曼予管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="曼予账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">68.5</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 68.5（账期55分 + 综合44.9×30%）</td>
+<td class="remark">日结；综合指数44.9，全量第76名，评级“淘汰/暂停新增”，最低价占比40.0%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="836.40" data-composite="44.7">
+<td class="rank">52</td>
+<td><select aria-label="思普瑞斯付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">思普瑞斯</td>
+<td class="department-cell"><select aria-label="思普瑞斯管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option selected="selected" value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="思普瑞斯账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">68.4</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 68.4（账期55分 + 综合44.7×30%）</td>
+<td class="remark">日结；综合指数44.7，全量第78名，评级“淘汰/暂停新增”，最低价占比83.4%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="249.00" data-composite="43.7">
+<td class="rank">53</td>
+<td><select aria-label="天之锦付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">天之锦</td>
+<td class="department-cell"><select aria-label="天之锦管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="天之锦账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">68.1</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 68.1（账期55分 + 综合43.7×30%）</td>
+<td class="remark">日结；综合指数43.7，全量第82名，评级“淘汰/暂停新增”，最低价占比48.2%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="609.90" data-composite="43.3">
+<td class="rank">54</td>
+<td><select aria-label="盛康付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">盛康</td>
+<td class="department-cell"><select aria-label="盛康管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="盛康账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">68.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 68.0（账期55分 + 综合43.3×30%）</td>
+<td class="remark">日结；综合指数43.3，全量第85名，评级“淘汰/暂停新增”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="1047.00" data-composite="42.3">
+<td class="rank">55</td>
+<td><select aria-label="埃非勒斯付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">埃非勒斯</td>
+<td class="department-cell"><select aria-label="埃非勒斯管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="埃非勒斯账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">67.7</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 67.7（账期55分 + 综合42.3×30%）</td>
+<td class="remark">日结；综合指数42.3，全量第87名，评级“淘汰/暂停新增”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="129.00" data-composite="41.5">
+<td class="rank">56</td>
+<td><select aria-label="迦新付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">迦新</td>
+<td class="department-cell"><select aria-label="迦新管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="迦新账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">67.5</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 67.5（账期55分 + 综合41.5×30%）</td>
+<td class="remark">日结；综合指数41.5，全量第92名，评级“淘汰/暂停新增”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="87.50" data-composite="41.2">
+<td class="rank">57</td>
+<td><select aria-label="愚余斋付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">愚余斋</td>
+<td class="department-cell"><select aria-label="愚余斋管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="愚余斋账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">67.4</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 67.4（账期55分 + 综合41.2×30%）</td>
+<td class="remark">日结；综合指数41.2，全量第94名，评级“淘汰/暂停新增”，最低价占比96.0%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="224.00" data-composite="40.8">
+<td class="rank">58</td>
+<td><select aria-label="臻良付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">臻良</td>
+<td class="department-cell"><select aria-label="臻良管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="臻良账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">67.2</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 67.2（账期55分 + 综合40.8×30%）</td>
+<td class="remark">日结；综合指数40.8，全量第95名，评级“淘汰/暂停新增”，最低价占比100.0%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="276.00" data-composite="40.7">
+<td class="rank">59</td>
+<td><select aria-label="燕之坊付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">燕之坊</td>
+<td class="department-cell"><select aria-label="燕之坊管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="燕之坊账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">67.2</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 67.2（账期55分 + 综合40.7×30%）</td>
+<td class="remark">日结；综合指数40.7，全量第96名，评级“淘汰/暂停新增”，最低价占比51.2%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="721.14" data-composite="40.5">
+<td class="rank">60</td>
+<td><select aria-label="亚太翔宇付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">亚太翔宇</td>
+<td class="department-cell"><select aria-label="亚太翔宇管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="亚太翔宇账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">67.2</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 67.2（账期55分 + 综合40.5×30%）</td>
+<td class="remark">日结；综合指数40.5，全量第98名，评级“淘汰/暂停新增”，最低价占比50.0%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="240.00" data-composite="40.3">
+<td class="rank">61</td>
+<td><select aria-label="佰造付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">佰造</td>
+<td class="department-cell"><select aria-label="佰造管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="佰造账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">67.1</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 67.1（账期55分 + 综合40.3×30%）</td>
+<td class="remark">日结；综合指数40.3，全量第99名，评级“淘汰/暂停新增”，最低价占比99.2%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="144.00" data-composite="39.7">
+<td class="rank">62</td>
+<td><select aria-label="芳恩付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">芳恩</td>
+<td class="department-cell"><select aria-label="芳恩管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="芳恩账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">66.9</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 66.9（账期55分 + 综合39.7×30%）</td>
+<td class="remark">日结；综合指数39.7，全量第101名，评级“淘汰/暂停新增”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="1645.91" data-composite="38.9">
+<td class="rank">63</td>
+<td><select aria-label="鑫吉付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">鑫吉</td>
+<td class="department-cell"><select aria-label="鑫吉管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="鑫吉账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">66.7</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 66.7（账期55分 + 综合38.9×30%）</td>
+<td class="remark">日结；综合指数38.9，全量第104名，评级“淘汰/暂停新增”，最低价占比100.0%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="31.00" data-composite="38.3">
+<td class="rank">64</td>
+<td><select aria-label="东路付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">东路</td>
+<td class="department-cell"><select aria-label="东路管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="东路账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">66.5</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 66.5（账期55分 + 综合38.3×30%）</td>
+<td class="remark">日结；综合指数38.3，全量第107名，评级“淘汰/暂停新增”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="83.00" data-composite="38.0">
+<td class="rank">65</td>
+<td><select aria-label="浙江客语付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">浙江客语</td>
+<td class="department-cell"><select aria-label="浙江客语管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="浙江客语账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">66.4</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 66.4（账期55分 + 综合38.0×30%）</td>
+<td class="remark">日结；综合指数38.0，全量第109名，评级“淘汰/暂停新增”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="2248.00" data-composite="37.7">
+<td class="rank">66</td>
+<td><select aria-label="牧拓付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">牧拓</td>
+<td class="department-cell"><select aria-label="牧拓管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option selected="selected" value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="牧拓账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">66.3</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 66.3（账期55分 + 综合37.7×30%）</td>
+<td class="remark">日结；综合指数37.7，全量第110名，评级“淘汰/暂停新增”，最低价占比72.5%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="138.00" data-composite="36.5">
+<td class="rank">67</td>
+<td><select aria-label="欣旺达付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">欣旺达</td>
+<td class="department-cell"><select aria-label="欣旺达管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option selected="selected" value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="欣旺达账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">66.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 66.0（账期55分 + 综合36.5×30%）</td>
+<td class="remark">日结；综合指数36.5，全量第112名，评级“淘汰/暂停新增”，最低价占比31.0%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="1667.80" data-composite="35.3">
+<td class="rank">68</td>
+<td><select aria-label="信昌付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">信昌</td>
+<td class="department-cell"><select aria-label="信昌管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="信昌账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">65.6</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 65.6（账期55分 + 综合35.3×30%）</td>
+<td class="remark">日结；综合指数35.3，全量第113名，评级“淘汰/暂停新增”，最低价占比81.8%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="520.30" data-composite="35.2">
+<td class="rank">69</td>
+<td><select aria-label="名品文化付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">名品文化</td>
+<td class="department-cell"><select aria-label="名品文化管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="名品文化账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">65.6</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 65.6（账期55分 + 综合35.2×30%）</td>
+<td class="remark">日结；综合指数35.2，全量第114名，评级“淘汰/暂停新增”，最低价占比28.0%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="258.00" data-composite="34.0">
+<td class="rank">70</td>
+<td><select aria-label="锦之澳付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">锦之澳</td>
+<td class="department-cell"><select aria-label="锦之澳管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="锦之澳账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">65.2</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 65.2（账期55分 + 综合34.0×30%）</td>
+<td class="remark">日结；综合指数34.0，全量第116名，评级“淘汰/暂停新增”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="304.00" data-composite="33.6">
+<td class="rank">71</td>
+<td><select aria-label="集物付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">集物</td>
+<td class="department-cell"><select aria-label="集物管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="集物账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">65.1</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 65.1（账期55分 + 综合33.6×30%）</td>
+<td class="remark">日结；综合指数33.6，全量第117名，评级“淘汰/暂停新增”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="556.00" data-composite="0.0">
+<td class="rank">72</td>
+<td><select aria-label="玖芭武（洋小发）付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">玖芭武（洋小发）</td>
+<td class="department-cell"><select aria-label="玖芭武（洋小发）管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="玖芭武（洋小发）账期" class="term-select"><option value="月结">月结</option><option selected="selected" value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">65.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 65.0（账期65分 + 综合0.0×30%）</td>
+<td class="remark">半月结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；账期条件较好，但综合指数偏低，排序被下调</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="238.00" data-composite="0.0">
+<td class="rank">73</td>
+<td><select aria-label="魔仕付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">魔仕</td>
+<td class="department-cell"><select aria-label="魔仕管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="魔仕账期" class="term-select"><option value="月结">月结</option><option selected="selected" value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">65.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 65.0（账期65分 + 综合0.0×30%）</td>
+<td class="remark">半月结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；账期条件较好，但综合指数偏低，排序被下调</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="587.00" data-composite="33.0">
+<td class="rank">74</td>
+<td><select aria-label="嘉铭桐辰付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">嘉铭桐辰</td>
+<td class="department-cell"><select aria-label="嘉铭桐辰管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="嘉铭桐辰账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">64.9</td>
+<td class="timing">常规安排</td>
+<td>付款得分 64.9（账期55分 + 综合33.0×30%）</td>
+<td class="remark">日结；综合指数33.0，全量第120名，评级“淘汰/暂停新增”，最低价占比26.9%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="202.00" data-composite="32.7">
+<td class="rank">75</td>
+<td><select aria-label="品味人生付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">品味人生</td>
+<td class="department-cell"><select aria-label="品味人生管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="品味人生账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">64.8</td>
+<td class="timing">常规安排</td>
+<td>付款得分 64.8（账期55分 + 综合32.7×30%）</td>
+<td class="remark">日结；综合指数32.7，全量第123名，评级“淘汰/暂停新增”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="690.30" data-composite="30.7">
+<td class="rank">76</td>
+<td><select aria-label="中好粮油付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">中好粮油</td>
+<td class="department-cell"><select aria-label="中好粮油管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="中好粮油账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">64.2</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 64.2（账期55分 + 综合30.7×30%）</td>
+<td class="remark">日结；综合指数30.7，全量第126名，评级“淘汰/暂停新增”，最低价占比42.9%；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="555.00" data-composite="29.5">
+<td class="rank">77</td>
+<td><select aria-label="江苏卓米付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">江苏卓米</td>
+<td class="department-cell"><select aria-label="江苏卓米管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="江苏卓米账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">63.9</td>
+<td class="timing">常规安排</td>
+<td>付款得分 63.9（账期55分 + 综合29.5×30%）</td>
+<td class="remark">日结；综合指数29.5，全量第128名，评级“淘汰/暂停新增”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="3267.65" data-composite="29.0">
+<td class="rank">78</td>
+<td><select aria-label="福义家付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">福义家</td>
+<td class="department-cell"><select aria-label="福义家管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option selected="selected" value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="福义家账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">63.7</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 63.7（账期55分 + 综合29.0×30%）</td>
+<td class="remark">日结；综合指数29.0，全量第133名，评级“淘汰/暂停新增”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="1500.30" data-composite="26.7">
+<td class="rank">79</td>
+<td><select aria-label="方家铺子付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">方家铺子</td>
+<td class="department-cell"><select aria-label="方家铺子管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="方家铺子账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">63.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 63.0（账期55分 + 综合26.7×30%）</td>
+<td class="remark">日结；综合指数26.7，全量第136名，评级“淘汰/暂停新增”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="303.00" data-composite="26.5">
+<td class="rank">80</td>
+<td><select aria-label="艾优精选付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">艾优精选</td>
+<td class="department-cell"><select aria-label="艾优精选管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="艾优精选账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">63.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 63.0（账期55分 + 综合26.5×30%）</td>
+<td class="remark">日结；综合指数26.5，全量第138名，评级“淘汰/暂停新增”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="49.00" data-composite="22.0">
+<td class="rank">81</td>
+<td><select aria-label="永福元付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">永福元</td>
+<td class="department-cell"><select aria-label="永福元管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="永福元账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">61.6</td>
+<td class="timing">常规安排</td>
+<td>付款得分 61.6（账期55分 + 综合22.0×30%）</td>
+<td class="remark">日结；综合指数22.0，全量第149名，评级“淘汰/暂停新增”；综合指数及账期优势有限，后序付款</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="1318.00" data-composite="0.0">
+<td class="rank">82</td>
+<td><select aria-label="果果蜜付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">果果蜜</td>
+<td class="department-cell"><select aria-label="果果蜜管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="果果蜜账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option selected="selected" value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">60.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 60.0（账期60分 + 综合0.0×30%）</td>
+<td class="remark">周结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="4187.69" data-composite="0.0">
+<td class="rank">83</td>
+<td><select aria-label="享兑付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">享兑</td>
+<td class="department-cell"><select aria-label="享兑管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="享兑账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="3974.64" data-composite="0.0">
+<td class="rank">84</td>
+<td><select aria-label="青海青自付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">青海青自</td>
+<td class="department-cell"><select aria-label="青海青自管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="青海青自账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="2550.00" data-composite="0.0">
+<td class="rank">85</td>
+<td><select aria-label="真礼付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">真礼</td>
+<td class="department-cell"><select aria-label="真礼管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="真礼账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="1549.70" data-composite="0.0">
+<td class="rank">86</td>
+<td><select aria-label="欧菲斯付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">欧菲斯</td>
+<td class="department-cell"><select aria-label="欧菲斯管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="欧菲斯账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="1207.00" data-composite="0.0">
+<td class="rank">87</td>
+<td><select aria-label="中山美领付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">中山美领</td>
+<td class="department-cell"><select aria-label="中山美领管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="中山美领账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="793.50" data-composite="0.0">
+<td class="rank">88</td>
+<td><select aria-label="臻惠付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">臻惠</td>
+<td class="department-cell"><select aria-label="臻惠管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="臻惠账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p2" data-amount="755.00" data-composite="0.0">
+<td class="rank">89</td>
+<td><select aria-label="泓宇茶业付款优先级" class="priority-select p2"><option value="P1">P1 优先付款</option><option selected="selected" value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">泓宇茶业</td>
+<td class="department-cell"><select aria-label="泓宇茶业管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="泓宇茶业账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">第二批支付</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="736.98" data-composite="0.0">
+<td class="rank">90</td>
+<td><select aria-label="李斛记付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">李斛记</td>
+<td class="department-cell"><select aria-label="李斛记管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="李斛记账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="718.80" data-composite="0.0">
+<td class="rank">91</td>
+<td><select aria-label="斛乐生物付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">斛乐生物</td>
+<td class="department-cell"><select aria-label="斛乐生物管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="斛乐生物账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="707.00" data-composite="0.0">
+<td class="rank">92</td>
+<td><select aria-label="渔果臻选付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">渔果臻选</td>
+<td class="department-cell"><select aria-label="渔果臻选管理部门" class="dept-select"><option value="">请选择</option><option selected="selected" value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="渔果臻选账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="593.00" data-composite="0.0">
+<td class="rank">93</td>
+<td><select aria-label="江西青龙付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">江西青龙</td>
+<td class="department-cell"><select aria-label="江西青龙管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="江西青龙账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="520.00" data-composite="0.0">
+<td class="rank">94</td>
+<td><select aria-label="天铄电子付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">天铄电子</td>
+<td class="department-cell"><select aria-label="天铄电子管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="天铄电子账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="512.00" data-composite="0.0">
+<td class="rank">95</td>
+<td><select aria-label="中山天铄付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">中山天铄</td>
+<td class="department-cell"><select aria-label="中山天铄管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="中山天铄账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="418.00" data-composite="0.0">
+<td class="rank">96</td>
+<td><select aria-label="志唐付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">志唐</td>
+<td class="department-cell"><select aria-label="志唐管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="志唐账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="372.00" data-composite="0.0">
+<td class="rank">97</td>
+<td><select aria-label="美汇付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">美汇</td>
+<td class="department-cell"><select aria-label="美汇管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="美汇账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="350.00" data-composite="0.0">
+<td class="rank">98</td>
+<td><select aria-label="巧遇付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">巧遇</td>
+<td class="department-cell"><select aria-label="巧遇管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="巧遇账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="299.50" data-composite="0.0">
+<td class="rank">99</td>
+<td><select aria-label="乐养坊付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">乐养坊</td>
+<td class="department-cell"><select aria-label="乐养坊管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="乐养坊账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="239.50" data-composite="0.0">
+<td class="rank">100</td>
+<td><select aria-label="硒粮付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">硒粮</td>
+<td class="department-cell"><select aria-label="硒粮管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="硒粮账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="237.14" data-composite="0.0">
+<td class="rank">101</td>
+<td><select aria-label="淘宝丽红付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">淘宝丽红</td>
+<td class="department-cell"><select aria-label="淘宝丽红管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="淘宝丽红账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="200.80" data-composite="0.0">
+<td class="rank">102</td>
+<td><select aria-label="鑫博正付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">鑫博正</td>
+<td class="department-cell"><select aria-label="鑫博正管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="鑫博正账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="180.00" data-composite="0.0">
+<td class="rank">103</td>
+<td><select aria-label="极源生物付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">极源生物</td>
+<td class="department-cell"><select aria-label="极源生物管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="极源生物账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="124.00" data-composite="0.0">
+<td class="rank">104</td>
+<td><select aria-label="新蒙得付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">新蒙得</td>
+<td class="department-cell"><select aria-label="新蒙得管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="新蒙得账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="99.00" data-composite="0.0">
+<td class="rank">105</td>
+<td><select aria-label="燕遇东方付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">燕遇东方</td>
+<td class="department-cell"><select aria-label="燕遇东方管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="燕遇东方账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="91.00" data-composite="0.0">
+<td class="rank">106</td>
+<td><select aria-label="龙的礼享付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">龙的礼享</td>
+<td class="department-cell"><select aria-label="龙的礼享管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="龙的礼享账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="89.00" data-composite="0.0">
+<td class="rank">107</td>
+<td><select aria-label="方正国际付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">方正国际</td>
+<td class="department-cell"><select aria-label="方正国际管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="方正国际账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="77.80" data-composite="0.0">
+<td class="rank">108</td>
+<td><select aria-label="江苏好艺付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">江苏好艺</td>
+<td class="department-cell"><select aria-label="江苏好艺管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="江苏好艺账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="46.00" data-composite="0.0">
+<td class="rank">109</td>
+<td><select aria-label="焙睿颂付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">焙睿颂</td>
+<td class="department-cell"><select aria-label="焙睿颂管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="焙睿颂账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="42.00" data-composite="0.0">
+<td class="rank">110</td>
+<td><select aria-label="梨山付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">梨山</td>
+<td class="department-cell"><select aria-label="梨山管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="梨山账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="31.00" data-composite="0.0">
+<td class="rank">111</td>
+<td><select aria-label="咪然付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">咪然</td>
+<td class="department-cell"><select aria-label="咪然管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="咪然账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="20.80" data-composite="0.0">
+<td class="rank">112</td>
+<td><select aria-label="乐阔付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">乐阔</td>
+<td class="department-cell"><select aria-label="乐阔管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="乐阔账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="18.02" data-composite="0.0">
+<td class="rank">113</td>
+<td><select aria-label="昌茂付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">昌茂</td>
+<td class="department-cell"><select aria-label="昌茂管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="昌茂账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p3" data-amount="16.31" data-composite="0.0">
+<td class="rank">114</td>
+<td><select aria-label="甘肃礼想付款优先级" class="priority-select p3"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option selected="selected" value="P3">P3 常规付款</option><option value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">甘肃礼想</td>
+<td class="department-cell"><select aria-label="甘肃礼想管理部门" class="dept-select"><option value="">请选择</option><option value="食品">食品</option><option selected="selected" value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="甘肃礼想账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option selected="selected" value="日结">日结</option><option value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">55.0</td>
+<td class="timing">常规安排</td>
+<td>付款得分 55.0（账期55分 + 综合0.0×30%）</td>
+<td class="remark">日结；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p4" data-amount="174.00" data-composite="0.0">
+<td class="rank">115</td>
+<td><select aria-label="柏瑞金禾付款优先级" class="priority-select p4"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option selected="selected" value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">柏瑞金禾</td>
+<td class="department-cell"><select aria-label="柏瑞金禾管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="柏瑞金禾账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option selected="selected" value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">20.0</td>
+<td class="timing">后置支付</td>
+<td>付款得分 20.0（账期20分 + 综合0.0×30%）</td>
+<td class="remark">白条；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p4" data-amount="117.00" data-composite="0.0">
+<td class="rank">116</td>
+<td><select aria-label="润达丰付款优先级" class="priority-select p4"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option selected="selected" value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">润达丰</td>
+<td class="department-cell"><select aria-label="润达丰管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="润达丰账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option selected="selected" value="白条">白条</option><option value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">20.0</td>
+<td class="timing">后置支付</td>
+<td>付款得分 20.0（账期20分 + 综合0.0×30%）</td>
+<td class="remark">白条；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；缺少综合评分支撑，暂主要按账期排序，建议补充主体映射</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p4" data-amount="15979.87" data-composite="0.0">
+<td class="rank">117</td>
+<td><select aria-label="凌鑫垫付付款优先级" class="priority-select p4"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option selected="selected" value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">凌鑫垫付</td>
+<td class="department-cell"><select aria-label="凌鑫垫付管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="凌鑫垫付账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option selected="selected" value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">0.0</td>
+<td class="timing">按项目/订单实际需要支付</td>
+<td>付款得分 0.0（账期0分 + 综合0.0×30%）</td>
+<td class="remark">预付款/专项采购；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；预付款/专项采购无账期贡献，原则上后置</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p4" data-amount="782.13" data-composite="0.0">
+<td class="rank">118</td>
+<td><select aria-label="拼多多客户商品代采付款优先级" class="priority-select p4"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option selected="selected" value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">拼多多客户商品代采</td>
+<td class="department-cell"><select aria-label="拼多多客户商品代采管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="拼多多客户商品代采账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option selected="selected" value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">0.0</td>
+<td class="timing">按项目/订单实际需要支付</td>
+<td>付款得分 0.0（账期0分 + 综合0.0×30%）</td>
+<td class="remark">预付款/专项采购；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；预付款/专项采购无账期贡献，原则上后置</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p4" data-amount="656.36" data-composite="0.0">
+<td class="rank">119</td>
+<td><select aria-label="淘宝补单付款优先级" class="priority-select p4"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option selected="selected" value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">淘宝补单</td>
+<td class="department-cell"><select aria-label="淘宝补单管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="淘宝补单账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option selected="selected" value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">0.0</td>
+<td class="timing">按项目/订单实际需要支付</td>
+<td>付款得分 0.0（账期0分 + 综合0.0×30%）</td>
+<td class="remark">预付款/专项采购；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；预付款/专项采购无账期贡献，原则上后置</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+<tr class="tier-p4" data-amount="170.10" data-composite="0.0">
+<td class="rank">120</td>
+<td><select aria-label="淘宝李舸付款优先级" class="priority-select p4"><option value="P1">P1 优先付款</option><option value="P2">P2 第二批付款</option><option value="P3">P3 常规付款</option><option selected="selected" value="P4">P4 后置/项目支付</option></select></td>
+<td class="supplier">淘宝李舸</td>
+<td class="department-cell"><select aria-label="淘宝李舸管理部门" class="dept-select"><option selected="selected" value="">请选择</option><option value="食品">食品</option><option value="非食品">非食品</option><option value="日化">日化</option><option value="食品日化">食品日化</option><option value="食品非食品">食品非食品</option><option value="非食品日化">非食品日化</option><option value="食品非食品日化">食品非食品日化</option></select></td>
+<td><select aria-label="淘宝李舸账期" class="term-select"><option value="月结">月结</option><option value="半月结">半月结</option><option value="周结">周结</option><option value="日结">日结</option><option value="白条">白条</option><option selected="selected" value="预付款/专项采购">预付款/专项采购</option></select></td>
+<td class="score">0.0</td>
+<td class="timing">按项目/订单实际需要支付</td>
+<td>付款得分 0.0（账期0分 + 综合0.0×30%）</td>
+<td class="remark">预付款/专项采购；供应商分析报告未匹配到综合指数，本项综合评分暂按0分计；预付款/专项采购无账期贡献，原则上后置</td>
+<td class="actions-cell"><button class="delete-btn" type="button">删除</button></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="footer">
+    本表共列示 120 家供应商，未付款金额合计 ¥141,211.90。建议实际付款时仍结合当日现金余额、当前订单履约、异常发货、供应商催款及临时项目情况做最后调整。
+  </div>
+<div class="modal-mask" id="supplierModal"><div class="modal"><h3>新增供应商</h3><div class="form-grid">
+<div class="field full"><label>供应商名称</label><input id="newSupplierName" placeholder="请输入供应商名称" type="text"/></div>
+<div class="field"><label>管理部门</label><select id="newDept"><option value="">请选择</option><option>食品</option><option>非食品</option><option>日化</option><option>食品日化</option><option>食品非食品</option><option>非食品日化</option><option>食品非食品日化</option></select></div>
+<div class="field"><label>账期</label><select id="newTerm"><option>月结</option><option>半月结</option><option>周结</option><option selected="">日结</option><option>白条</option><option>预付款/专项采购</option></select></div>
+<div class="field"><label>供应商综合指数</label><input id="newComposite" max="100" min="0" step="0.1" type="number" value="0"/></div>
+<div class="field"><label>付款优先级</label><select id="newPriority"><option>P1</option><option selected="">P2</option><option>P3</option><option>P4</option></select></div>
+</div><div class="modal-actions"><button class="btn-secondary" id="cancelAdd" type="button">取消</button><button class="btn-primary" id="confirmAdd" type="button">确认新增</button></div></div></div></div>
+<script>
+(function(){
+  const timingMap={P1:'优先支付',P2:'第二批支付',P3:'常规安排',P4:'按项目/订单实际需要支付'};
+  const tierClass={P1:'tier-p1',P2:'tier-p2',P3:'tier-p3',P4:'tier-p4'};
+  const tierOrder={P1:1,P2:2,P3:3,P4:4};
+  const termScore={'月结':70,'半月结':65,'周结':60,'日结':55,'白条':20,'预付款/专项采购':0};
+  const cfg=window.SUPABASE_CONFIG||{};
+  const supabase=(window.supabase&&cfg.url&&cfg.key&&!String(cfg.url).includes('YOUR_')&&!String(cfg.key).includes('YOUR_'))
+    ? window.supabase.createClient(cfg.url,cfg.key):null;
+  let syncing=false;
+
+  function amountOf(row){return parseFloat(row.dataset.amount||'0')||0;}
+  function compositeOf(row){return parseFloat(row.dataset.composite||'0')||0;}
+  function scoreOf(row){const t=row.querySelector('.score')?.textContent||'0'; return parseFloat(t.replace(/[^0-9.\-]/g,''))||0;}
+  function money(n){return '¥'+n.toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  function deptOptions(selected=''){const a=['','食品','非食品','日化','食品日化','食品非食品','非食品日化','食品非食品日化'];return a.map(v=>`<option value="${v}" ${v===selected?'selected':''}>${v||'请选择'}</option>`).join('');}
+  function termOptions(selected='日结'){return Object.keys(termScore).map(v=>`<option value="${v}" ${v===selected?'selected':''}>${v}</option>`).join('');}
+  function priorityOptions(selected='P2'){return ['P1','P2','P3','P4'].map(v=>`<option value="${v}" ${v===selected?'selected':''}>${v} ${v==='P1'?'优先付款':v==='P2'?'第二批付款':v==='P3'?'常规付款':'后置/项目支付'}</option>`).join('');}
+  function recalcRow(row){
+    const term=row.querySelector('.term-select')?.value||'白条';
+    const base=termScore[term]??0, comp=compositeOf(row), score=base+comp*0.30;
+    const scoreCell=row.querySelector('.score'); if(scoreCell) scoreCell.textContent=score.toFixed(1);
+    const reason=row.children[7]; if(reason) reason.textContent=`付款得分 ${score.toFixed(1)}（账期${base}分 + 综合${comp.toFixed(1)}×30%）`;
+  }
+  function refreshCards(){
+    const sums={P1:0,P2:0,P3:0,P4:0};
+    const rows=[...document.querySelectorAll('tbody tr')];
+    rows.forEach(row=>{const sel=row.querySelector('.priority-select'); if(sel) sums[sel.value]+=amountOf(row);});
+    const cards=document.querySelectorAll('.cards .card .value');
+    if(cards.length>=6){cards[0].textContent=rows.length+'家';cards[1].textContent=money(sums.P1);cards[2].textContent=money(sums.P2);cards[3].textContent=money(sums.P3);cards[4].textContent=money(sums.P4);cards[5].textContent=new Date().toLocaleString('zh-CN');}
+  }
+  function applyRowState(row){
+    const sel=row.querySelector('.priority-select'); if(!sel) return; const v=sel.value;
+    row.classList.remove('tier-p1','tier-p2','tier-p3','tier-p4'); row.classList.add(tierClass[v]);
+    sel.classList.remove('p1','p2','p3','p4'); sel.classList.add(v.toLowerCase());
+    const timing=row.querySelector('.timing'); if(timing) timing.textContent=timingMap[v];
+  }
+  function regroupAndSort(){
+    const tbody=document.querySelector('tbody'); if(!tbody) return;
+    const rows=[...tbody.querySelectorAll('tr')];
+    rows.forEach(r=>{applyRowState(r);recalcRow(r);});
+    rows.sort((a,b)=>{
+      const pa=a.querySelector('.priority-select')?.value||'P4', pb=b.querySelector('.priority-select')?.value||'P4';
+      const tierDiff=(tierOrder[pa]??4)-(tierOrder[pb]??4); if(tierDiff!==0) return tierDiff;
+      const scoreDiff=scoreOf(b)-scoreOf(a); if(Math.abs(scoreDiff)>1e-9) return scoreDiff;
+      const na=a.querySelector('.supplier')?.textContent.trim()||'', nb=b.querySelector('.supplier')?.textContent.trim()||'';
+      return na.localeCompare(nb,'zh-CN');
+    });
+    rows.forEach((row,i)=>{tbody.appendChild(row);const rank=row.querySelector('.rank');if(rank)rank.textContent=String(i+1);});
+    refreshCards();
+  }
+  function rowData(row){
+    return {id:row.dataset.id||null,name:row.querySelector('.supplier')?.textContent.trim()||'',dept:row.querySelector('.dept-select')?.value||'',term:row.querySelector('.term-select')?.value||'白条',priority:row.querySelector('.priority-select')?.value||'P4',composite:compositeOf(row),amount:amountOf(row),remark:row.querySelector('.remark')?.textContent||''};
+  }
+  function buildRow(d){
+    const base=termScore[d.term]??0,score=base+(parseFloat(d.composite)||0)*.3,p=d.priority||'P2';
+    const tr=document.createElement('tr');tr.className=tierClass[p];tr.dataset.id=d.id||'';tr.dataset.amount=d.amount||0;tr.dataset.composite=parseFloat(d.composite)||0;
+    tr.innerHTML=`<td class="rank"></td><td><select aria-label="${esc(d.name)}付款优先级" class="priority-select ${p.toLowerCase()}">${priorityOptions(p)}</select></td><td class="supplier">${esc(d.name)}</td><td class="department-cell"><select aria-label="${esc(d.name)}管理部门" class="dept-select">${deptOptions(d.dept||'')}</select></td><td><select aria-label="${esc(d.name)}账期" class="term-select">${termOptions(d.term||'日结')}</select></td><td class="score">${score.toFixed(1)}</td><td class="timing">${timingMap[p]}</td><td>付款得分 ${score.toFixed(1)}（账期${base}分 + 综合${(parseFloat(d.composite)||0).toFixed(1)}×30%）</td><td class="remark">${esc(d.remark||'新增供应商；综合指数及账期可后续调整。')}</td><td class="actions-cell"><button type="button" class="delete-btn">删除</button></td>`;
+    bindRow(tr);return tr;
+  }
+  async function saveRow(row){
+    if(!supabase||syncing||!row?.dataset.id)return;
+    const d=rowData(row);
+    const {error}=await supabase.from('suppliers').update({name:d.name,dept:d.dept,term:d.term,priority:d.priority,composite:d.composite,amount:d.amount,remark:d.remark,updated_at:new Date().toISOString()}).eq('id',d.id);
+    if(error){console.error(error);alert('保存失败：'+error.message);}
+  }
+  async function deleteRow(row){
+    if(!supabase||!row?.dataset.id)return;
+    const {error}=await supabase.from('suppliers').delete().eq('id',row.dataset.id);
+    if(error){console.error(error);alert('删除失败：'+error.message);return false;} return true;
+  }
+  function bindRow(row){
+    row.querySelector('.priority-select')?.addEventListener('change',async()=>{applyRowState(row);recalcRow(row);regroupAndSort();await saveRow(row);});
+    row.querySelector('.dept-select')?.addEventListener('change',async()=>await saveRow(row));
+    row.querySelector('.term-select')?.addEventListener('change',async()=>{recalcRow(row);regroupAndSort();await saveRow(row);});
+    row.querySelector('.delete-btn')?.addEventListener('click',async()=>{const name=row.querySelector('.supplier')?.textContent.trim()||'该供应商';if(!confirm(`确认删除“${name}”吗？`))return;const ok=await deleteRow(row);if(ok){row.remove();regroupAndSort();}});
+  }
+  async function loadOnline(){
+    if(!supabase){
+      const banner=document.createElement('div');banner.style='background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;padding:12px 16px;border-radius:10px;margin-bottom:14px;font-size:13px';banner.textContent='当前为未配置模式：请先编辑 config.js，填写 Supabase Project URL 和 Publishable Key。页面仍可查看原始数据，但不会多人同步。';document.querySelector('.wrap')?.prepend(banner);
+      document.querySelectorAll('tbody tr').forEach(r=>{recalcRow(r);bindRow(r)});regroupAndSort();return;
+    }
+    const {data,error}=await supabase.from('suppliers').select('*').order('name');
+    if(error){console.error(error);alert('读取在线数据库失败：'+error.message);return;}
+    syncing=true;
+    const tbody=document.querySelector('tbody');tbody.innerHTML='';
+    (data||[]).forEach(d=>tbody.appendChild(buildRow(d)));
+    regroupAndSort(); syncing=false;
+  }
+  async function addOnline(d){
+    if(!supabase){alert('请先配置 config.js');return;}
+    const {data,error}=await supabase.from('suppliers').insert(d).select().single();
+    if(error){alert('新增失败：'+error.message);return;}
+    document.querySelector('tbody').appendChild(buildRow(data));regroupAndSort();
+  }
+
+  // 修正统计卡片为 6 项
+  const cards=document.querySelector('.cards');
+  if(cards && cards.querySelectorAll('.card').length===1){
+    cards.innerHTML=`<div class="card"><div class="label">供应商数量</div><div class="value">0家</div></div><div class="card"><div class="label">P1待付金额</div><div class="value">¥0.00</div></div><div class="card"><div class="label">P2待付金额</div><div class="value">¥0.00</div></div><div class="card"><div class="label">P3待付金额</div><div class="value">¥0.00</div></div><div class="card"><div class="label">P4待付金额</div><div class="value">¥0.00</div></div><div class="card"><div class="label">最近同步</div><div class="value" style="font-size:14px">-</div></div>`;
+  }
+
+  loadOnline();
+  setInterval(()=>{if(supabase&&!document.hidden)loadOnline();},30000);
+
+  const modal=document.getElementById('supplierModal');
+  document.getElementById('addSupplierBtn')?.addEventListener('click',()=>{document.getElementById('newSupplierName').value='';document.getElementById('newDept').value='';document.getElementById('newTerm').value='日结';document.getElementById('newComposite').value='0';document.getElementById('newPriority').value='P2';modal.classList.add('show');document.getElementById('newSupplierName').focus();});
+  document.getElementById('cancelAdd')?.addEventListener('click',()=>modal.classList.remove('show'));
+  modal?.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('show');});
+  document.getElementById('confirmAdd')?.addEventListener('click',async()=>{
+    const name=document.getElementById('newSupplierName').value.trim();if(!name){alert('请输入供应商名称');return;}
+    const d={name,dept:document.getElementById('newDept').value,term:document.getElementById('newTerm').value,composite:parseFloat(document.getElementById('newComposite').value)||0,priority:document.getElementById('newPriority').value,amount:0,remark:'新增供应商；综合指数及账期可后续调整。'};
+    if(supabase){await addOnline(d);}else{document.querySelector('tbody').appendChild(buildRow(d));regroupAndSort();}
+    modal.classList.remove('show');
+  });
+})();
+</script></body>
+</html>
