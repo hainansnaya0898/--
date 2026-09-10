@@ -1509,7 +1509,7 @@ tbody tr.tier-p4 td:first-child{border-left:4px solid #6b7280}
   }
   async function loadOnline(){
     if(!supabase){
-      const banner=document.createElement('div');banner.style='background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;padding:12px 16px;border-radius:10px;margin-bottom:14px;font-size:13px';banner.textContent='当前为未配置模式：请先编辑 config.js，填写 Supabase Project URL 和 Publishable Key。页面仍可查看原始数据，但不会多人同步。';document.querySelector('.wrap')?.prepend(banner);
+      const banner=document.createElement('div');banner.style='background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;padding:12px 16px;border-radius:10px;margin-bottom:14px;font-size:13px';banner.textContent='';document.querySelector('.wrap')?.prepend(banner);
       document.querySelectorAll('tbody tr').forEach(r=>{recalcRow(r);bindRow(r)});regroupAndSort();return;
     }
     const {data,error}=await supabase.from('suppliers').select('*').order('name');
